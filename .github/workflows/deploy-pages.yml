@@ -18,25 +18,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Download static site
-        run: |
-          set -euo pipefail
-          mkdir -p site
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            mkdir -p "site/$(dirname "$file")"
-            curl -fsSL "https://sg-pixel2-web.sg-pixel2-room.workers.dev/$file" -o "site/$file"
-          done < site-files.txt
-          printf 'window.__ROOM_API__ = "https://sg-pixel2.netlify.app";\n' > site/config.js
-          mkdir -p site/share
-          printf '%s\n' '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../"><title>SG.像素2</title></head><body><a href="../">进入 SG.像素2</a></body></html>' > site/share/index.html
-          touch site/.nojekyll
+      - uses: actions/checkout@v4
+
+      # 静态站直接放在仓库根目录，这里只需要把仓库自身的文件清理掉
+      - name: Prepare site
+        run: rm -rf .git .github site-files.txt
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: .
 
   deploy:
     environment:
