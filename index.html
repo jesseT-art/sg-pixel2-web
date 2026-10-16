@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#e8f1ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="format-detection" content="telephone=no" />
+<title>SG.像素2 智慧管理平台</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+<link rel="preload" href="assets/app.min.js" as="script" fetchpriority="high" />
+<link rel="preload" href="assets/logo.png" as="image" fetchpriority="high" />
+<link rel="stylesheet" href="assets/wiki/wiki.css" />
+<meta name="apple-mobile-web-app-title" content="像素2寻房" />
+<meta name="application-name" content="像素2寻房" />
+<link rel="image_src" href="https://sg-pixel2.netlify.app/assets/share-square.jpg" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SG.像素2" />
+<meta property="og:title" content="SG.像素2 智慧管理平台" />
+<meta property="og:description" content="找房不用问，点开就是活房。一键复制UID、房间5分钟自动过期、热度真实统计。不用下载、不用注册。" />
+<meta property="og:url" content="https://sg-pixel2.netlify.app/" />
+<meta property="og:image" content="https://sg-pixel2.netlify.app/assets/share-square.jpg" />
+<meta property="og:image:secure_url" content="https://sg-pixel2.netlify.app/assets/share-square.jpg" />
+<meta property="og:image:width" content="1080" />
+<meta property="og:image:height" content="1080" />
+<meta itemprop="image" content="https://sg-pixel2.netlify.app/assets/share-square.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://sg-pixel2.netlify.app/assets/share-square.jpg" />
+<meta name="description" content="找房不用问，点开就是活房。像素生存者2 房间速查：5分钟自动过期、热度真实统计、一键复制UID。" />
+<style>
+  /* ================= 主题变量 ================= */
+  :root {
+    --bg: #eef4fd;          /* 页面底色 */
+    --header-bg: #dde9ff;   /* 顶部分区色（与正文区分） */
+    --card: #ffffff;
+    --border: #d9e7fb;
+    --text: #16233a;
+    --sub: #6b7b91;
+    --muted: #9aa7bb;
+    /* 主题色（用户可切换，JS 会覆盖这几个变量） */
+    --theme-c: #2f7dff;
+    --theme-strong: #1f6bff;
+    --theme-soft: #eaf3ff;
+    --on-theme: #ffffff;
+    --blue: var(--theme-c);
+    --blue-strong: var(--theme-strong);
+    --blue-soft: var(--theme-soft);
+    --chip: #8cc2ff;
+    --chip-active: var(--theme-c);
+    --danger: #e06060;
+    --danger-soft: #fff5f5;
+    --input-bg: #f5f9ff;
+    --shadow: 0 2px 10px rgba(47,125,255,0.07);
+    --shadow-strong: 0 8px 22px rgba(47,125,255,0.32);
+  }
+  html[data-theme="dark"] {
+    --bg: #0a1120;
+    --header-bg: #111d33;
+    --card: #16233a;
+    --border: #26374f;
+    --text: #e8eefc;
+    --sub: #93a3bd;
+    --muted: #6d7f9a;
+    --blue: var(--theme-c);
+    --blue-strong: var(--theme-strong);
+    --blue-soft: var(--theme-soft);
+    --chip: #2c4f8f;
+    --chip-active: var(--theme-c);
+    --danger: #ff8a8a;
+    --danger-soft: #341d20;
+    --input-bg: #111c30;
+    --shadow: 0 2px 10px rgba(0,0,0,0.35);
+    --shadow-strong: 0 8px 22px rgba(0,0,0,0.45);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+    transition: background .25s, color .25s;
+  }
+  button, input, textarea { font-family: inherit; touch-action: manipulation; }
+
+  /* ================= 顶部分区 ================= */
+  .header {
+    position: sticky; top: 0; z-index: 20;
+    /* 和底部导航栏一样的透明液态玻璃；管理员上传背景图后会叠加在上面 */
+    background-image: var(--header-bg-img, linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0.26)));
+    background-size: var(--header-bg-size, auto);
+    background-position: center;
+    background-repeat: no-repeat;
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+    transition: background .25s, border-color .25s;
+  }
+  html[data-theme="dark"] .header {
+    background: linear-gradient(180deg, rgba(30,44,72,0.50), rgba(18,28,48,0.32));
+    border-bottom-color: rgba(255,255,255,0.10);
+  }
+  .head-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .title {
+    flex: 1 1 auto; min-width: 0; margin: 0;
+    font-size: 17px; font-weight: 700; letter-spacing: .3px;
+    color: var(--text); text-align: left;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    -webkit-user-select: none; user-select: none;
+  }
+  .icon-btn {
+    flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    font-size: 15px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .12s, background .2s, box-shadow .2s;
+    box-shadow: 0 2px 6px rgba(47, 125, 255, 0.16);
+  }
+  html[data-theme="dark"] .icon-btn { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45); }
+  .icon-btn:active { box-shadow: 0 1px 3px rgba(47, 125, 255, 0.2); }
+  .icon-btn:active { transform: scale(.92); }
+  .brand { flex: 0 0 auto; display: inline-flex; align-items: center; }
+  .brand img { display: block; height: 16px; width: auto; }
+
+  .search-input {
+    width: 100%; height: 42px; border: 1px solid var(--border); background: var(--input-bg);
+    border-radius: 21px; padding: 0 16px; font-size: 16px; color: var(--text);
+    outline: none; transition: border-color .18s, background .18s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .search-input::placeholder { color: var(--muted); font-size: 14px; }
+  .search-input:focus { background: var(--card); border-color: var(--chip); }
+
+  /* 标签栏：换行铺满，不横向滚动，一屏看全 */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .tab {
+    flex: 0 0 auto; border-radius: 999px; padding: 5px 13px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--blue);                 /* 跟随主题色 */
+    background: rgba(255,255,255,0.34);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.50);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.40);
+    transition: background .18s, color .18s, box-shadow .18s, transform .1s;
+  }
+  .tab:active { transform: scale(.95); }
+  .tab.active {
+    background: var(--blue); color: var(--on-theme);
+    border-color: transparent;
+    box-shadow: 0 3px 10px rgba(20,60,140,0.22);
+  }
+  html[data-theme="dark"] .tab {
+    background: rgba(70,95,140,0.30);
+    border-color: rgba(255,255,255,0.12);
+    color: var(--blue);                 /* 深色模式也跟随主题色 */
+  }
+  html[data-theme="dark"] .tab.active { color: var(--on-theme); }
+
+  /* ================= 吉祥物公告栏 ================= */
+  .mascot-card {
+    display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 10px;
+    margin: 12px 14px 0; padding: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  .mascot { flex: 0 0 auto; width: 46px; height: 56px; image-rendering: pixelated; }
+  .bubble {
+    position: relative; flex: 1 1 auto; min-width: 0;
+    background: var(--blue-soft); border-radius: 12px; padding: 10px 12px;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    min-height: 56px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .bubble-more { margin-top: 4px; font-size: 11px; color: var(--blue); text-align: right; }
+  .mascot-card { cursor: pointer; }
+  .mascot-card:active { transform: scale(.995); }
+  .bubble:before {
+    content: ""; position: absolute; right: -6px; top: 18px;
+    border: 6px solid transparent; border-left-color: var(--blue-soft); border-right: 0;
+  }
+  .bubble b { color: var(--blue); }
+  .bubble .tagline { font-size: 11px; color: var(--sub); display: block; margin-top: 2px; }
+
+  /* ================= 列表 ================= */
+  .refresh-row { display: flex; justify-content: flex-end; margin: 8px 14px 0; }
+  .refresh-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 1px solid var(--border); background: var(--card); color: var(--blue);
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+    box-shadow: var(--shadow); cursor: pointer; transition: transform .12s;
+  }
+  .refresh-btn:active { transform: scale(.94); }
+  .refresh-ico { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .refresh-btn.spinning .refresh-ico { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .list { padding: 12px 14px 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 13px; margin-bottom: 11px; box-shadow: var(--shadow);
+    cursor: pointer; transition: transform .12s, border-color .18s, opacity .25s;
+  }
+  .card:active { transform: scale(.985); border-color: var(--chip); }
+  .card.gone { opacity: 0; transform: translateY(-6px) scale(.98); }
+  .card.soon .time { color: #ff8a00; }
+
+  .uid-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+  .uid-block { min-width: 0; }
+  .uid-label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .uid {
+    display: block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 15px; font-weight: 700; color: var(--blue-strong); letter-spacing: .2px;
+    word-break: break-all; -webkit-user-select: text; user-select: text;
+  }
+  .card-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+  .tag-chip { font-size: 11px; color: var(--blue); background: var(--blue-soft); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .del {
+    border: 1px solid var(--danger); background: var(--danger-soft); color: var(--danger);
+    font-size: 11px; border-radius: 999px; padding: 3px 9px; cursor: pointer; white-space: nowrap;
+  }
+  .del.confirm { background: var(--danger); color: #fff; }
+  .note { font-size: 14px; line-height: 1.55; color: var(--text); margin-bottom: 9px; word-break: break-word; }
+  .note-label { color: var(--muted); font-size: 12px; margin-right: 4px; }
+  .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--sub); }
+  .time { color: var(--blue); font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .hot b { color: var(--blue); }
+  .empty { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 14px; line-height: 1.8; }
+  .empty strong { display: block; color: var(--sub); font-size: 15px; margin-bottom: 4px; }
+
+  /* ================= 底部导航栏（液态玻璃） ================= */
+  .bottom-nav {
+    position: fixed; left: 12px; right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 30;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 7px 6px; border-radius: 26px;
+    /* 半透明 + 背景模糊 = 液态玻璃（透明度调高，能看到下面内容） */
+    background: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.24));
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 30px rgba(20, 60, 140, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    transition: background .25s, border-color .25s;
+  }
+  html[data-theme="dark"] .bottom-nav {
+    background: linear-gradient(180deg, rgba(30, 44, 72, 0.46), rgba(18, 28, 48, 0.30));
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+  .nav-item {
+    flex: 1 1 0; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border: none; background: transparent; color: var(--sub);
+    font-size: 11px; font-weight: 600; letter-spacing: .2px;
+    padding: 6px 2px; border-radius: 18px; cursor: pointer;
+    transition: transform .12s, background .18s, color .18s;
+  }
+  .nav-item:active { transform: scale(.93); background: rgba(47, 125, 255, 0.10); }
+  .nav-item.primary { color: var(--blue); }
+  .nav-ico {
+    width: 22px; height: 22px; fill: none; stroke: currentColor;
+    stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ================= 轻提示 ================= */
+  .toast {
+    position: fixed; left: 50%; top: 50%; z-index: 90;
+    transform: translate(-50%,-50%) scale(.92);
+    background: rgba(23,35,54,.9); color: #fff; font-size: 14px;
+    padding: 12px 20px; border-radius: 12px; max-width: 80vw; text-align: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  /* ================= 弹层 ================= */
+  .sheet-mask {
+    position: fixed; inset: 0; z-index: 50; background: rgba(17,24,39,.45);
+    opacity: 0; pointer-events: none; transition: opacity .22s;
+  }
+  .sheet-mask.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; background: var(--card);
+    border-radius: 20px 20px 0 0; padding: 16px 16px calc(18px + env(safe-area-inset-bottom));
+    transform: translateY(102%); transition: transform .26s ease;
+    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .sheet-mask.open .sheet { transform: translateY(0); }
+  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin: 2px 0 4px; color: var(--text); }
+  .sheet-sub { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--sub); margin-bottom: 5px; }
+  .field input, .field textarea {
+    width: 100%; border: 1px solid var(--border); background: var(--input-bg); border-radius: 12px;
+    padding: 11px 13px; font-size: 16px; color: var(--text); outline: none;
+    transition: border-color .18s, background .18s; appearance: none; -webkit-appearance: none;
+  }
+  .field input:focus, .field textarea:focus { background: var(--card); border-color: var(--chip); }
+  .field textarea { resize: none; height: 70px; line-height: 1.5; }
+  .pick { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pick button {
+    border: 1px solid var(--border); background: var(--input-bg); color: var(--sub);
+    border-radius: 999px; padding: 6px 13px; font-size: 13px; cursor: pointer;
+  }
+  .pick button.active { background: var(--blue); border-color: var(--blue); color: var(--on-theme); box-shadow: 0 3px 10px rgba(20,60,140,.22); }
+  .submit {
+    width: 100%; height: 46px; margin-top: 4px; border: none; border-radius: 14px;
+    background: linear-gradient(180deg, var(--blue), var(--blue-strong)); color: var(--on-theme);
+    font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .submit:active { transform: scale(.99); }
+  .submit[disabled] { opacity: .6; }
+  .ghost, a.ghost {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 42px; margin-top: 8px; border: 1px solid var(--border);
+    border-radius: 14px; background: var(--card); color: var(--sub); font-size: 15px; cursor: pointer;
+    text-decoration: none; box-sizing: border-box;
+  }
+  .parse-hint { font-size: 12px; line-height: 1.6; margin: -4px 0 10px; color: var(--sub); min-height: 18px; }
+  .parse-hint.ok { color: var(--blue); }
+  .parse-hint.bad { color: var(--danger); }
+
+  /* ================= 管理员面板 ================= */
+  .ad-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .ad-tab {
+    flex: 1 1 28%; min-width: 62px; border: none; background: transparent; color: var(--sub);
+    font-size: 13px; padding: 7px 2px; border-radius: 8px; cursor: pointer;
+  }
+  .ad-tab.active { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+  .ad-pane { display: none; }
+  .ad-pane.active { display: block; }
+  .ad-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ad-item {
+    display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+    background: var(--input-bg); border-radius: 999px; padding: 5px 7px 5px 12px;
+    font-size: 13px; color: var(--text);
+  }
+  .ad-item button { border: none; background: var(--card); color: var(--danger); width: 19px; height: 19px; border-radius: 50%; font-size: 13px; line-height: 1; cursor: pointer; padding: 0; }
+  .ad-row {
+    display: flex; align-items: flex-start; gap: 8px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .ad-row:last-child { border-bottom: none; }
+  .ad-row .grow { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+  .ad-row .time2 { color: var(--muted); font-size: 11px; }
+  .ad-empty { color: var(--muted); font-size: 13px; padding: 14px 0; text-align: center; }
+  .imp-row {
+    display: flex; align-items: flex-start; gap: 8px; padding: 9px 0;
+    border-bottom: 1px solid var(--border); font-size: 13px; cursor: pointer;
+  }
+  .imp-row:last-child { border-bottom: none; }
+  .imp-row input { flex: 0 0 auto; margin-top: 3px; width: 16px; height: 16px; accent-color: var(--blue); }
+  .imp-body { flex: 1 1 auto; min-width: 0; word-break: break-word; line-height: 1.5; }
+  .imp-body b { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--blue-strong); }
+  .imp-select {
+    width: 100%; border: 1px solid var(--border); background: var(--input-bg); border-radius: 12px;
+    padding: 11px 13px; font-size: 16px; color: var(--text); outline: none; appearance: none; -webkit-appearance: none;
+  }
+  .imp-select:focus { background: var(--card); border-color: var(--chip); }
+
+  /* 界面配色 */
+  .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 10px; margin-bottom: 14px; }
+  .theme-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    border: none; background: transparent; cursor: pointer; padding: 0;
+  }
+  .theme-sw {
+    width: 60px; height: 60px; border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(20,60,140,0.10);
+    transition: transform .12s;
+  }
+  .theme-item:active .theme-sw { transform: scale(.92); }
+  .theme-item.active .theme-sw { outline: 3px solid var(--blue); outline-offset: 3px; }
+  .theme-name { font-size: 12px; color: var(--sub); }
+  .theme-item.active .theme-name { color: var(--blue); font-weight: 700; }
+
+  /* 安装引导 */
+  .guide-step {
+    display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border);
+    font-size: 14px; line-height: 1.6; align-items: flex-start;
+  }
+  .guide-step:last-child { border-bottom: none; }
+  .guide-num {
+    flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--blue); color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .guide-step b { color: var(--blue); }
+  .guide-tip {
+    margin-top: 12px; padding: 10px 12px; border-radius: 12px;
+    background: var(--blue-soft); color: var(--sub); font-size: 12px; line-height: 1.6;
+  }
+  .guide-tip b { color: var(--blue); }
+
+  .site-footer {
+    margin: 18px 14px calc(96px + env(safe-area-inset-bottom));
+    padding: 14px 14px 16px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    font-size: 11px; line-height: 1.75; color: var(--muted);
+  }
+  .site-footer p { margin: 0 0 4px; }
+  .site-footer p:last-child { margin-bottom: 0; }
+  .site-footer b { color: var(--sub); font-size: 12px; }
+  .site-footer strong { color: var(--sub); }
+
+  .mode-dot { position: fixed; left: 12px; top: calc(4px + env(safe-area-inset-top)); z-index: 40; font-size: 10px; color: var(--muted); pointer-events: none; }
+
+  /* ================= 封面 ================= */
+  .splash {
+    position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(165deg, #2f7dff 0%, #4a97ff 52%, #8cc2ff 100%);
+    transition: opacity .4s ease;
+  }
+  .splash.hide { opacity: 0; pointer-events: none; }
+  .splash-inner { text-align: center; padding: 0 24px; }
+  .splash-logo img { display: block; margin: 0 auto; width: min(76vw, 340px); height: auto; filter: drop-shadow(0 3px 12px rgba(8,40,100,.28)); }
+  .splash-sub {
+    margin-top: 16px; font-family: "Microsoft YaHei", "微软雅黑", -apple-system, sans-serif;
+    font-weight: 700; font-size: 14px; letter-spacing: 2px; color: rgba(255,255,255,.94);
+  }
+  @media (max-width: 340px) {
+    .splash-logo img { width: 82vw; }
+    .splash-sub { font-size: 12px; letter-spacing: 1px; }
+    .brand img { height: 14px; }
+    .title { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+  <div class="splash" id="splash">
+    <div class="splash-inner">
+      <div class="splash-logo"><img src="assets/logo.png" alt="SG.像素2" fetchpriority="high" decoding="async" /></div>
+      <div class="splash-sub">像素2 智能寻房 · 5分钟必达</div>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="head-row">
+      <h1 class="title" id="title">SG.像素2 智慧管理平台</h1>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="切换深色模式">🌙</button>
+      <span class="brand"><img src="assets/logo-blue.png" alt="SG.像素2" decoding="async" /></span>
+    </div>
+    <input id="search" class="search-input" type="search" placeholder="输入关键词搜索房间" autocomplete="off" />
+    <nav class="tabs" id="tabs"></nav>
+  </header>
+
+  <section class="mascot-card" id="mascotCard">
+    <img class="mascot" id="mascotImg" src="assets/mascot.png" alt="小助手" decoding="async" />
+    <div class="bubble">
+      <span id="bubbleText">正在读取公告…</span>
+      <span class="bubble-more">全部公告 ›</span>
+    </div>
+  </section>
+
+  <div class="refresh-row">
+    <button class="refresh-btn" id="refreshBtn" type="button">
+      <svg class="refresh-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 12a8.4 8.4 0 1 1-2.5-6"/><path d="M20.4 4.2V10h-5.8"/></svg>
+      <span>刷新房间</span>
+    </button>
+  </div>
+
+  <main class="list" id="list"></main>
+
+  <footer class="site-footer">
+    <p><b>免责声明</b></p>
+    <p>本站并非《像素生存者2》官方网站，与游戏开发团队、发行方及运营方均无隶属关系。本站是玩家自发建立的<strong>非官方</strong>交流工具。</p>
+    <p>房间信息由玩家自行发布，本站不对其真实性、合法性负责；如发现违规内容，请点「反馈」告知管理员处理。</p>
+    <p>本站不提供游戏下载、代练、交易等任何服务，也不参与任何形式的账号买卖。</p>
+    <p>角色形象等游戏素材版权归原游戏开发团队所有。</p>
+  </footer>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" id="installBtn" type="button">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.2" y="2.6" width="11.6" height="18.8" rx="3.2"/><path d="M12 7.6v5.6"/><path d="m9.8 11 2.2 2.2L14.2 11"/></svg>
+      <span>添加桌面</span>
+    </button>
+    <button class="nav-item" id="colorBtn" type="button">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="9.2" cy="9.6" r="1.25" fill="currentColor" stroke="none"/><circle cx="14.6" cy="8.8" r="1.25" fill="currentColor" stroke="none"/><circle cx="16.2" cy="13.2" r="1.25" fill="currentColor" stroke="none"/><circle cx="12" cy="16.4" r="1.25" fill="currentColor" stroke="none"/></svg>
+      <span>配色</span>
+    </button>
+    <button class="nav-item primary" id="fab" type="button">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 10.6 12 3.2l8.8 7.4"/><path d="M5.4 9.7V20a1 1 0 0 0 1 1h11.2a1 1 0 0 0 1-1V9.7"/><path d="M12 12.4v5.8"/><path d="M9.1 15.3h5.8"/></svg>
+      <span>发布房间</span>
+    </button>
+    <button class="nav-item" id="wikiBtn" type="button">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 5.5v13.9A2.6 2.6 0 0 1 6.6 17H19"/><path d="M8 7h7M8 10h5"/></svg>
+      <span>百科</span>
+    </button>
+    <button class="nav-item" id="feedbackBtn" type="button">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 11.6a8.3 8.3 0 0 1-8.6 8.3 9.4 9.4 0 0 1-2.7-.4L4.4 21l1.1-4.1a8.1 8.1 0 0 1-2.1-5.3A8.3 8.3 0 0 1 12 3.3a8.3 8.3 0 0 1 8.6 8.3Z"/></svg>
+      <span>反馈</span>
+    </button>
+  </nav>
+
+  <!-- ================= 像素百科（独立全屏） ================= -->
+  <section class="wiki-screen" id="wikiScreen" aria-hidden="true">
+    <header class="wiki-top">
+      <div class="head-row wiki-head-row">
+        <button class="wiki-back" id="wikiBackBtn" type="button" style="display:none">‹</button>
+        <h1 class="title" id="wikiTitle">像素百科</h1>
+        <button class="icon-btn" id="wikiThemeBtn" type="button" aria-label="切换深色模式">🌙</button>
+        <span class="brand"><img src="assets/logo-blue.png" alt="SG.像素2" decoding="async" /></span>
+        <span id="wikiSub" style="display:none"></span>
+      </div>
+    </header>
+
+    <div class="wiki-body" id="wikiBody">
+      <section class="wiki-view active" id="wikiListView">
+        <div class="wiki-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input id="wikiSearch" type="search" placeholder="搜索攻略、图鉴、地图" autocomplete="off" />
+        </div>
+        <div class="wiki-actions">
+          <button class="wiki-glass" id="wikiQueryBtn" type="button">查询码</button>
+          <button class="wiki-glass" id="mailTemplateBtn" type="button">邮箱模板</button>
+          <button class="wiki-glass wiki-publish-entry" id="wikiSubmitBtn" type="button">投稿</button>
+        </div>
+        <section class="mascot-card wiki-mascot-card" id="wikiMascotCard">
+          <img class="mascot" id="wikiMascotImg" src="assets/mascot.png" alt="小助手" decoding="async" />
+          <div class="bubble" id="wikiBubbleText">正在读取今日百科数据…</div>
+        </section>
+        <div class="wiki-section"><h3>分类</h3><div class="wiki-section-right"><span id="wikiCount">0 个词条</span><button class="wiki-refresh-btn" id="wikiRefreshBtn" type="button">刷新词条</button></div></div>
+        <div class="wiki-tabs-row">
+          <div class="wiki-tabs" id="wikiTabs"></div>
+          <button class="qq-group-btn" id="qqGroupBtn" type="button">官方QQ群</button>
+        </div>
+        <div class="wiki-subtabs" id="wikiSubTabs" style="display:none"></div>
+        <div class="wiki-sort">
+          <button type="button" data-wiki-sort="random">随机排序</button>
+          <button type="button" data-wiki-sort="today">按今日点击量排序</button>
+          <button type="button" data-wiki-sort="new">按发布时间排序</button>
+        </div>
+        <div class="wiki-section"><h3>精选内容</h3><span id="wikiSortLabel">按今日点击量</span></div>
+        <div class="wiki-list" id="wikiList"></div>
+        <button class="wiki-more" id="wikiMoreBtn" type="button" style="display:none">加载更多</button>
+      </section>
+
+      <section class="wiki-view" id="wikiDetailView">
+        <div id="wikiDetail"></div>
+      </section>
+
+      <section class="wiki-view" id="wikiSubmitView">
+        <div class="wiki-form">
+          <div class="wiki-field">
+            <label for="wikiNickname">游戏昵称（选填）</label>
+            <input class="wiki-input" id="wikiNickname" maxlength="30" placeholder="不填默认 SG.匿名" autocomplete="off" />
+          </div>
+          <div class="wiki-field">
+            <label>选择分类</label>
+            <div class="wiki-pick" id="wikiPick"></div>
+          </div>
+          <div class="wiki-field">
+            <label for="wikiFormTitle" id="wikiTitleLabel">标题</label>
+            <input class="wiki-input" id="wikiFormTitle" maxlength="80" placeholder="例如：雪谷速通路线与物资点" autocomplete="off" />
+          </div>
+          <div class="wiki-field" id="wikiVideoField" style="display:none">
+            <label for="wikiVideoUrl">视频链接（选填）</label>
+            <input class="wiki-input" id="wikiVideoUrl" type="url" placeholder="粘贴 B 站 / 抖音 / 其他视频链接" autocomplete="off" />
+          </div>
+          <div class="wiki-field" id="wikiCodexFields" style="display:none">
+            <label>图鉴类型</label>
+            <div class="wiki-pick" id="wikiTypePick"></div>
+            <div id="wikiDynamicFields" style="margin-top:12px"></div>
+          </div>
+          <div class="wiki-field">
+            <label id="wikiCoverLabel">封面图（可选，自动压缩到 200KB）</label>
+            <div class="wiki-upload" id="wikiCoverUpload"><span class="plus">＋</span><span>上传封面</span></div>
+            <input id="wikiCoverInput" type="file" accept="image/*" hidden />
+          </div>
+          <div class="wiki-field">
+            <label id="wikiEditorLabel">正文（支持标题、图片、列表和链接）</label>
+            <div id="wikiEditor"></div>
+          </div>
+          <button class="wiki-submit" id="wikiPublishBtn" type="button">提交审核</button>
+          <div class="wiki-note" id="wikiEditorNote">图片自动压缩；正文最多 3 张图；审核通过后才会公开。</div>
+          <div id="wikiSubmitResult"></div>
+        </div>
+      </section>
+
+      <section class="wiki-view" id="mailListView">
+        <div class="wiki-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input id="mailSearch" type="search" placeholder="搜索邮箱模板" autocomplete="off" />
+        </div>
+        <section class="mascot-card wiki-mascot-card" id="mailMascotCard">
+          <img class="mascot" src="assets/mascot.png" alt="小助手" decoding="async" />
+          <div class="bubble" id="mailBubbleText">官方邮箱：未设置</div>
+        </section>
+        <div class="wiki-section"><h3>邮箱模板</h3><span id="mailCount">0 个模板</span></div>
+        <button class="wiki-glass wiki-publish-entry" id="mailSubmitEntry" type="button" style="width:100%;margin-bottom:10px">投稿邮箱模板</button>
+        <button class="ghost" id="mailOfficialEditBtn" type="button" style="display:none;width:100%;margin-bottom:10px">修改官方邮箱</button>
+        <div class="wiki-list" id="mailList"></div>
+      </section>
+
+      <section class="wiki-view" id="mailDetailView"><div id="mailDetail"></div></section>
+
+      <section class="wiki-view" id="mailSubmitView">
+        <div class="wiki-form">
+          <div class="wiki-field"><label for="mailTitle">标题</label><input class="wiki-input" id="mailTitle" maxlength="80" placeholder="例如：账号找回申诉模板" autocomplete="off" /></div>
+          <div class="wiki-field"><label for="mailPublisher">发布者名称</label><input class="wiki-input" id="mailPublisher" maxlength="40" placeholder="例如：SG.匿名" autocomplete="off" /></div>
+          <div class="wiki-field"><label for="mailSituation">常用情形说明</label><input class="wiki-input" id="mailSituation" maxlength="160" placeholder="例如：账号无法登录、道具丢失时使用" autocomplete="off" /></div>
+          <div class="wiki-field"><label for="mailBody">正文输入</label><textarea class="wiki-textarea" id="mailBody" maxlength="12000" placeholder="输入可直接发送给官方的邮件正文"></textarea></div>
+          <div class="wiki-field"><label>图片（最多 4 张）</label><div class="wiki-upload" id="mailImageUpload" style="height:86px"><span class="plus">＋</span><span>添加图片</span></div><input id="mailImageInput" type="file" accept="image/*" multiple hidden /><div class="mail-image-preview" id="mailImagePreview"></div></div>
+          <button class="wiki-submit" id="mailSubmitBtn" type="button">提交邮箱模板</button>
+          <div class="wiki-note">邮箱模板常驻，管理员不能删除。图片会自动压缩。</div>
+        </div>
+      </section>
+    </div>
+
+  </section>
+
+  <div class="sheet-mask" id="wikiQueryMask">
+    <div class="sheet">
+      <div class="sheet-title">查询码</div>
+      <div class="sheet-sub">输入投稿后获得的 6 位查询码，查看审核进度或退回原因</div>
+      <div class="field">
+        <label for="wikiQueryInput">6 位数字查询码</label>
+        <input class="wiki-input" id="wikiQueryInput" type="text" inputmode="numeric" maxlength="6" placeholder="例如 482913" autocomplete="off" />
+      </div>
+      <button class="submit" id="wikiQuerySubmitBtn" type="button">开始查询</button>
+      <button class="ghost" id="wikiQueryCloseBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="wiki-code-mask" id="wikiCodeMask">
+    <div class="wiki-code-popup">
+      <div class="wiki-code-title">投稿已提交</div>
+      <p>请复制并保存查询码，之后可查询审核进度。</p>
+      <b id="wikiCodeValue">------</b>
+      <button class="wiki-code-copy" id="wikiCodeCopyBtn" type="button">复制查询码</button>
+      <small>必须点击复制后，窗口才会关闭</small>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="wikiCoverMask">
+    <div class="sheet">
+      <div class="sheet-title">裁切封面</div>
+      <div class="sheet-sub">拖动图片调整位置，滑杆缩放，保存后会生成一张方形封面</div>
+      <div class="wiki-cover-crop">
+        <div class="wiki-cover-crop-viewport" id="wikiCoverCropViewport">
+          <canvas id="wikiCoverCropCanvas" width="480" height="480"></canvas>
+          <div class="wiki-cover-crop-grid"></div>
+        </div>
+      </div>
+      <div class="wiki-cover-controls">
+        <label for="wikiCoverZoom">缩放</label>
+        <input id="wikiCoverZoom" type="range" min="1" max="3" step="0.01" value="1" />
+      </div>
+      <button class="submit" id="wikiCoverSaveBtn" type="button">保存并上传封面</button>
+      <button class="ghost" id="wikiCoverCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="mailCopyMask">
+    <div class="sheet">
+      <div class="sheet-title">复制邮箱正文</div>
+      <div class="sheet-sub">是否复制这段模板正文？</div>
+      <button class="submit" id="mailCopyConfirmBtn" type="button">复制正文</button>
+      <button class="ghost" id="mailCopyCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="qqGroupMask">
+    <div class="sheet">
+      <div class="sheet-title">官方QQ群</div>
+      <div class="sheet-sub">复制群号后会自动尝试打开 QQ；若未跳转，请再点一次</div>
+      <div class="qq-group-number">1124909778</div>
+      <button class="submit qq-group-copy" id="qqGroupCopyBtn" type="button">复制群号</button>
+      <button class="ghost" id="qqGroupCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="adminRejectMask">
+    <div class="sheet">
+      <div class="sheet-title">退回原因</div>
+      <div class="sheet-sub">填写退回原因后提交，用户可在查询码里看到</div>
+      <div class="field"><label for="adminRejectReason">退回原因（可留空）</label><textarea class="wiki-textarea" id="adminRejectReason" maxlength="120" placeholder="例如：资料有误，请补充出处"></textarea></div>
+      <button class="submit" id="adminRejectConfirmBtn" type="button">确认退回</button>
+      <button class="ghost" id="adminRejectCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="adminDeleteMask">
+    <div class="sheet">
+      <div class="sheet-title" id="adminDeleteTitle">删除图鉴</div>
+      <div class="sheet-sub" id="adminDeleteSub">删除后无法恢复，确认删除这条图鉴吗？</div>
+      <button class="submit" id="adminDeleteConfirmBtn" type="button">确认删除</button>
+      <button class="ghost" id="adminDeleteCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="mailOfficialMask">
+    <div class="sheet">
+      <div class="sheet-title">修改官方邮箱</div>
+      <div class="sheet-sub">修改后会显示在邮箱模板的 AI 气泡中，用户点击即可复制</div>
+      <div class="field"><label for="mailOfficialInput">游戏官方邮箱</label><input class="wiki-input" id="mailOfficialInput" type="email" maxlength="120" placeholder="例如：support@example.com" autocomplete="off" /></div>
+      <button class="submit" id="mailOfficialSaveBtn" type="button">保存邮箱</button>
+      <button class="ghost" id="mailOfficialCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="sheet-mask" id="wikiVideoMask">
+    <div class="sheet">
+      <div class="sheet-title">打开视频</div>
+      <div class="sheet-sub">即将离开本站前往视频网站观看，是否继续？</div>
+      <button class="submit" id="wikiVideoConfirmBtn" type="button">继续打开视频</button>
+      <button class="ghost" id="wikiVideoCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+
+  <div class="wiki-image-viewer" id="wikiImageViewer" aria-hidden="true">
+    <button class="wiki-image-viewer-close" id="wikiImageViewerCloseBtn" type="button" aria-label="关闭大图">×</button>
+    <img id="wikiImageViewerImg" alt="正文图片大图">
+    <div class="wiki-image-viewer-hint">双指缩放 · 拖动移动 · 双击复位 · 点击空白处关闭</div>
+  </div>
+
+  <span class="mode-dot" id="modeDot"></span>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ================= 发布房间 ================= -->
+  <div class="sheet-mask" id="sheetMask">
+    <div class="sheet">
+      <div class="sheet-title">发布房间</div>
+      <div class="sheet-sub">房间 5 分钟后自动失效并删除</div>
+      <form id="publishForm">
+        <div class="field">
+          <label for="fPaste">智能识别（把群里复制的文案整段粘进来）</label>
+          <textarea id="fPaste" placeholder="例如：雪谷 2512132115852_99434 雪来181百或191挂机老头带一151朋友"></textarea>
+        </div>
+        <div class="parse-hint" id="parseHint">粘贴后会自动填好下面的 UID、备注和标签</div>
+        <div class="field">
+          <label for="fUid">房间UID</label>
+          <input id="fUid" type="text" inputmode="numeric" placeholder="例如 2512132115852_99434" autocomplete="off" autocapitalize="off" autocorrect="off" />
+        </div>
+        <div class="field">
+          <label for="fNote">备注</label>
+          <textarea id="fNote" placeholder="例如 雪来181百或191挂机老头带一151朋友"></textarea>
+        </div>
+        <div class="field">
+          <label>分类标签（识别不到就默认无标签）</label>
+          <div class="pick" id="pick"></div>
+        </div>
+        <button class="submit" id="submitBtn" type="submit">确认发布</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 意见反馈 ================= -->
+  <div class="sheet-mask" id="fbMask">
+    <div class="sheet">
+      <div class="sheet-title">意见反馈</div>
+      <div class="sheet-sub">你的建议会直接发给管理员，好的点子我们会做进去</div>
+      <div class="field">
+        <label for="fFbText">反馈内容</label>
+        <textarea id="fFbText" placeholder="例如：希望加一个玛卡拉二级房的标签 / 列表刷新有点慢"></textarea>
+      </div>
+      <div class="field">
+        <label for="fFbContact">联系方式（可不填）</label>
+        <input id="fFbContact" type="text" placeholder="QQ号 / 游戏ID，方便管理员回复你" autocomplete="off" />
+      </div>
+      <button class="submit" id="fbSubmit" type="button">提交反馈</button>
+      <button class="ghost" id="fbClose" type="button">取消</button>
+    </div>
+  </div>
+
+  <!-- ================= 界面配色 ================= -->
+  <div class="sheet-mask" id="colorMask">
+    <div class="sheet">
+      <div class="sheet-title">界面配色</div>
+      <div class="sheet-sub">挑一个你喜欢的主题色，全站按钮和标签会跟着变</div>
+      <div class="theme-grid" id="themeGrid"></div>
+      <button class="ghost" id="colorCloseBtn" type="button">关闭</button>
+    </div>
+  </div>
+
+  <!-- ================= 全部公告 ================= -->
+  <div class="sheet-mask" id="annMask">
+    <div class="sheet">
+      <div class="sheet-title">📢 全部公告</div>
+      <div class="sheet-sub">管理员发布的消息，最新的在最上面</div>
+      <div id="annList"></div>
+      <button class="ghost" id="annCloseBtn" type="button">关闭</button>
+    </div>
+  </div>
+
+  <!-- ================= 添加到桌面（安装引导） ================= -->
+  <div class="sheet-mask" id="guideMask">
+    <div class="sheet">
+      <div class="sheet-title" id="guideTitle">添加到桌面</div>
+      <div class="sheet-sub" id="guideSub">按下面几步操作，以后点桌面图标就能直接打开</div>
+      <div id="guideBody"></div>
+      <button class="ghost" id="guideCloseBtn" type="button">我知道了</button>
+    </div>
+  </div>
+
+  <!-- ================= 管理员面板 ================= -->
+  <div class="sheet-mask" id="adminMask">
+    <div class="sheet">
+      <div class="sheet-title">管理面板</div>
+      <div class="sheet-sub" id="adminHint">仅管理员可操作</div>
+
+      <div id="adminLoginBox">
+        <div class="field">
+          <label for="fAdminKey">管理员口令</label>
+          <input id="fAdminKey" type="password" placeholder="请输入管理员口令" autocomplete="off" />
+        </div>
+        <button class="submit" id="adminLoginBtn" type="button">验证</button>
+      </div>
+
+      <div id="adminPanel" style="display:none">
+        <div class="ad-tabs">
+          <button class="ad-tab active" data-pane="paneAnn" type="button">公告</button>
+          <button class="ad-tab" data-pane="paneTag" type="button">标签</button>
+          <button class="ad-tab" data-pane="paneWord" type="button">屏蔽词</button>
+          <button class="ad-tab" data-pane="paneRoom" type="button">房间</button>
+          <button class="ad-tab" data-pane="paneImport" type="button">导入</button>
+          <button class="ad-tab" data-pane="paneFb" type="button">反馈</button>
+          <button class="ad-tab" data-pane="paneWiki" type="button">百科</button>
+        </div>
+
+        <div class="ad-pane active" id="paneAnn">
+          <div class="field">
+            <label>已有公告（点 × 删除）</label>
+            <div id="adminAnnList"></div>
+          </div>
+          <div class="field">
+            <label for="fAnnText">发布新公告</label>
+            <textarea id="fAnnText" placeholder="例如：今晚 8 点开雪谷活动房"></textarea>
+          </div>
+          <button class="submit" id="annSaveBtn" type="button">发布公告</button>
+        </div>
+
+        <div class="ad-pane" id="paneTag">
+          <div class="field">
+            <label>当前标签（点 × 删除）</label>
+            <div class="ad-list" id="adminTagList"></div>
+          </div>
+          <div class="field">
+            <label for="fAdminNewTag">新增标签</label>
+            <input id="fAdminNewTag" type="text" placeholder="输入标签名称，最多 8 个字" maxlength="8" autocomplete="off" />
+          </div>
+          <button class="submit" id="adminAddBtn" type="button">添加标签</button>
+        </div>
+
+        <div class="ad-pane" id="paneWord">
+          <div class="field">
+            <label>屏蔽词（备注里出现就会拒绝发布）</label>
+            <div class="ad-list" id="adminWordList"></div>
+          </div>
+          <div class="field">
+            <label for="fAdminNewWord">新增屏蔽词</label>
+            <input id="fAdminNewWord" type="text" placeholder="例如：代练、加群、微信" maxlength="20" autocomplete="off" />
+          </div>
+          <button class="submit" id="adminAddWordBtn" type="button">添加屏蔽词</button>
+          <button class="ghost" id="adminResetWordBtn" type="button">恢复默认词库</button>
+          <div class="sheet-sub" style="margin-top:10px">网址、QQ号、微信号、手机号是内置规则，始终拦截</div>
+        </div>
+
+        <div class="ad-pane" id="paneRoom">
+          <div class="ad-list" id="adminRoomList" style="display:block"></div>
+        </div>
+
+        <div class="ad-pane" id="paneFb">
+          <div id="adminFbList"></div>
+        </div>
+
+        <div class="ad-pane" id="paneImport">
+          <div class="field">
+            <label for="fImportText">粘贴房间信息（粘完自动识别，一句话也行）</label>
+            <textarea id="fImportText" style="height:88px" placeholder="例如：雪谷 2512132115852_99434 雪来181百或191挂机老头带一151朋友"></textarea>
+          </div>
+          <div class="parse-hint" id="importHint">粘贴后会自动填好下面的内容</div>
+
+          <div class="field">
+            <label for="fImportUid">房间UID</label>
+            <input id="fImportUid" type="text" inputmode="numeric" placeholder="2512132115852_99434" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="fImportNote">备注</label>
+            <textarea id="fImportNote" style="height:60px" placeholder="备注"></textarea>
+          </div>
+          <div class="field">
+            <label for="fImportTag">标签</label>
+            <select id="fImportTag" class="imp-select"></select>
+          </div>
+
+          <button class="submit" id="importOneBtn" type="button">发布这个房间</button>
+
+          <div id="importMulti" style="display:none">
+            <div class="sheet-sub" style="text-align:left;margin:12px 0 8px">这段文字里检测到 <b id="importMultiCount">0</b> 个房间</div>
+            <button class="ghost" id="importAllBtn" type="button">全部导入</button>
+          </div>
+
+          <div class="sheet-sub" style="margin-top:12px">发布的房间 5 分钟后自动过期；含违规词会被拒绝</div>
+        </div>
+
+        <div class="ad-pane" id="paneWiki">
+          <div class="admin-storage-card" id="adminStorageCard">
+            <div class="admin-storage-top"><b>网站存储</b><span id="adminStoragePercent">读取中…</span></div>
+            <div class="admin-storage-bar"><i id="adminStorageFill"></i></div>
+            <div class="admin-storage-meta" id="adminStorageMeta">正在计算站内数据占用…</div>
+            <button class="ghost" id="adminStorageCleanBtn" type="button">立即清理缓存文件</button>
+          </div>
+          <button class="ghost" id="adminWikiCreateBtn" type="button" style="margin-bottom:10px">新增图鉴</button>
+          <button class="ghost" id="adminWikiEditsBtn" type="button" style="margin-bottom:10px">查看待审核修改</button>
+          <div class="ad-list" id="adminWikiEditList" style="display:none"></div>
+          <button class="ghost" id="adminMailReviewBtn" type="button" style="margin-bottom:10px">查看待审核邮箱模板</button>
+          <div class="ad-list" id="adminMailList" style="display:none"></div>
+          <div class="ad-wiki-tabs">
+            <button class="wiki-status-tab active" type="button" data-wiki-status="pending">待审核</button>
+            <button class="wiki-status-tab" type="button" data-wiki-status="published">已发布</button>
+            <button class="wiki-status-tab" type="button" data-wiki-status="rejected">已退回</button>
+          </div>
+          <div class="ad-list" id="adminWikiList" style="display:block"></div>
+          <button class="ghost" id="adminWikiMoreBtn" type="button" style="display:none">加载更多</button>
+          <div class="wiki-section" style="margin:14px 2px 7px"><h3>分类管理</h3><span>管理员可增删改</span></div>
+          <div class="ad-list" id="adminWikiCategories" style="display:block"></div>
+          <div class="admin-inline-add"><input id="fAdminWikiCat" maxlength="16" placeholder="新增分类名称" /><button id="adminWikiAddCatBtn" type="button">添加</button></div>
+          <div class="sheet-sub" style="text-align:left;margin-top:8px">百科正文支持 Quill 富文本；审批后才会出现在前台。</div>
+        </div>
+
+      </div>
+
+      <button class="ghost" id="adminCloseBtn" type="button">关闭</button>
+    </div>
+  </div>
+
+<script src="config.js" defer></script>
+<script src="assets/app.min.js" defer></script>
+</body>
+</html>
